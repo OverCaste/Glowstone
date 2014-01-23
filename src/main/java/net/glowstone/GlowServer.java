@@ -13,6 +13,7 @@ import net.glowstone.scheduler.GlowScheduler;
 import net.glowstone.scheduler.WorldScheduler;
 import net.glowstone.util.*;
 import net.glowstone.util.bans.GlowBanList;
+import net.glowstone.scoreboard.GlowScoreboardManager;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.command.*;
@@ -134,12 +135,12 @@ public final class GlowServer implements Server {
      * A list of all the active {@link net.glowstone.net.GlowSession}s.
      */
     private final SessionRegistry sessions = new SessionRegistry();
-    
+
     /**
      * The console manager of this server.
      */
     private final ConsoleManager consoleManager = new ConsoleManager(this);
-    
+
     /**
      * The services manager of this server.
      */
@@ -168,8 +169,8 @@ public final class GlowServer implements Server {
     /**
      * The scoreboard manager for the server.
      */
-    private final ScoreboardManager scoreboardManager = null;
-    
+    private final ScoreboardManager scoreboardManager = new GlowScoreboardManager(this);
+
     /**
      * The crafting manager for this server.
      */
@@ -179,12 +180,12 @@ public final class GlowServer implements Server {
      * The configuration for the server.
      */
     private final ServerConfig config;
-    
+
     /**
      * The list of OPs on the server.
      */
     private final PlayerListFile opsList;
-    
+
     /**
      * The list of players whitelisted on the server.
      */
@@ -287,7 +288,7 @@ public final class GlowServer implements Server {
         // Determine console mode and start reading input
         consoleManager.startConsole(config.getBoolean(ServerConfig.Key.USE_JLINE));
         consoleManager.startFile(config.getString(ServerConfig.Key.LOG_FILE));
-        
+
         // Load player lists
         opsList.load();
         whitelist.load();
@@ -343,7 +344,7 @@ public final class GlowServer implements Server {
             throw new RuntimeException("Failed to bind to address. Maybe it is already in use?");
         }
     }
-    
+
     /**
      * Stops this server.
      */
@@ -352,7 +353,7 @@ public final class GlowServer implements Server {
         if (isShuttingDown) return;
         isShuttingDown = true;
         logger.info("The server is shutting down...");
-        
+
         // Disable plugins
         pluginManager.clearPlugins();
 
@@ -364,7 +365,7 @@ public final class GlowServer implements Server {
         // Stop the network server - starts the shutdown process
         // It may take a second or two for Netty to totally clean up
         networkServer.shutdown();
-        
+
         // Save worlds
         for (World world : getWorlds()) {
             logger.info("Saving world: " + world.getName());
@@ -410,7 +411,7 @@ public final class GlowServer implements Server {
             logger.log(Level.WARNING, "Failed to load server-icon.png", e);
         }
     }
-    
+
     /**
      * Loads all plugins, calling onLoad, &c.
      */
@@ -440,7 +441,7 @@ public final class GlowServer implements Server {
             }
         }
     }
-    
+
     /**
      * Enable all plugins of the given load order type.
      * @param type The type of plugin to enable.
@@ -492,10 +493,10 @@ public final class GlowServer implements Server {
             whitelist.load();
             nameBans.load();
             ipBans.load();
-            
+
             // Reset crafting
             craftingManager.resetRecipes();
-            
+
             // Load plugins
             loadPlugins();
             enablePlugins(PluginLoadOrder.STARTUP);
@@ -531,14 +532,14 @@ public final class GlowServer implements Server {
     public SessionRegistry getSessionRegistry() {
         return sessions;
     }
-    
+
     /**
      * Returns the list of OPs on this server.
      */
     public PlayerListFile getOpsList() {
         return opsList;
     }
-    
+
     /**
      * Returns the list of OPs on this server.
      */
